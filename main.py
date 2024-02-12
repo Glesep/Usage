@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import requests
 
@@ -12,16 +14,24 @@ class City(BaseModel):
     name: str
     timezone: str
 
+templates = Jinja2Templates(directory="templates")
+
 # 전체 도시들의 정보
-@app.get("/cities")                                                                                                     # Method = GET
-def get_cities():
-    results = []                                                                                                        # 결과를 저장하는 리스트
+@app.get("/cities", response_class=HTMLResponse)                                                                        # Method = GET
+def get_cities(request: Request):
+    context = {}
+    rsCity = []                                                                                                         # 결과를 저장하는 리스트
+    cnt = 0
     for city in db:                                                                                                     # 임시 DB 안에서 반복
         strs = f"http://worldtimeapi.org/api/timezone/{city['timezone']}"                                               # 랑크 저장
         r = requests.get(strs)                                                                                          # 저장된 링크 안에서 GET request를 받고 그 결과를 변수 r에 저장함 
         cur_time = r.json()['datetime']                                                                                 # r의 json파일에서 datetime이라는 key에 들어있는 값을 변수 cur_time에 저장함
-        results.append({'name': city['name'], 'timezone': city['timezone'], 'current_time': cur_time})                  # city 딕셔너리를 받아 result 리스트 안에 저장 (리스트 요소 하나가 city 딕셔너리 전체가 되는 것)
-    return results
+        cnt += 1
+        rsCity.append({'id': cnt, 'name': city['name'], 'timezone': city['timezone'], 'current_time': cur_time})        # city 딕셔너리를 받아 result 리스트 안에 저장 (리스트 요소 하나가 city 딕셔너리 전체가 되는 것)
+    context['request'] = request    
+    context['rsCity'] = rsCity
+
+    return templates.TemplateResponse('city_list.html', context)
 
 # 도시 하나의 정보
 @app.get("/cities/{city_id}")
