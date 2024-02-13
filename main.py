@@ -14,7 +14,12 @@ class City(BaseModel):
     name: str
     timezone: str
 
-templates = Jinja2Templates(directory="templates")
+class CityModify(BaseModel):                          
+    name: str
+    timezone: str
+    id: int
+
+templates = Jinja2Templates(directory="templates")                                                                      # 템플릿 사용 가능하게 해줌
 
 # 전체 도시들의 정보
 @app.get("/cities", response_class=HTMLResponse)                                                                        # Method = GET
@@ -35,18 +40,28 @@ def get_cities(request: Request):
 
 # 도시 하나의 정보
 @app.get("/cities/{city_id}")
-async def get_city(city_id: int):                                                                                       # city_id를 경로 매개변수로 받음
+async def get_city(request: Request, city_id: int):                                                                     # city_id를 경로 매개변수로 받음
+    
     city = db[city_id - 1]                                                                                              # index = city_id -1
-    strs = f"http://worldtimeapi.org/api/timezone/{city['timezone']}"
-    r = requests.get(strs)
+    r = requests.get(f"http://worldtimeapi.org/api/timezone/{city['timezone']}")
     cur_time = r.json()['datetime']
-    return {'name': city['name'], 'timezone': city['timezone'], 'current_time': cur_time}
+    context = {'request': request, 'name': city['name'], 'timezone': city['timezone'], 'current_time': cur_time}
+    
+    return templates.TemplateResponse("city_detail.html", context)
    
 # 도시 정보 추가
 @app.post("/cities")                                                      
 async def create_city(city: City):                                                                                      # City 모델을 매개변수로 받음
     db.append(city.model_dump())                                                                                        # db 리스트에 City 모델(딕셔너리 타입) 추가
+    
     return db[-1]                                                                                                       # db 리스트의 마지막 요소 반환
+
+@app.put("/cities")
+async def modify_city(city: CityModify):
+    db[city.id - 1] = {'name': city.name, 'timezone': city.timezone}
+
+    return db[city.id - 1]                                                 
+ 
 
 # 도시 정보 삭제
 @app.delete("/cities/{city_id}")                                                                                        
