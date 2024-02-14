@@ -4,16 +4,36 @@
     <meta charset="UTF-8">
     <title>City - timezone</title>
 
-    {% block scripts %}
+{% block scripts %}
         <script>
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        //var cookie = jQuery.trim(cookies[i]);
+                        const cookie = cookies[i].trim();
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            var csrftoken = getCookie('csrftoken');
+
+
+
             var xhr;
 
             // AJAX로 등록
             function postCity() {
-                var cname = document.getElementById('name_').value;                                                             //name_ 값을 받아와 cname에 저장
-                var ctimezone = document.getElementById('timezone_').value;                                                     //timezone_ 값을 받아와 ctimezone_에 저장
+                var cname = document.getElementById('name_').value;                                                             // name_ 값을 받아와 cname에 저장
+                var ctimezone = document.getElementById('timezone_').value;                                                     // timezone_ 값을 받아와 ctimezone_에 저장
 
-                var data = {name: cname, timezone: ctimezone}                                                                   // 데이터를 딕셔너리 형태로 입력
+                var data = {name: cname, timezone: ctimezone};                                                                   // 데이터를 딕셔너리 형태로 입력
                 var datastr = JSON.stringify(data);                                                                             // JSON 형식으로 data를 변환
             
 
@@ -23,15 +43,16 @@
                         var data = xhr.responseText;                                                                            // responseText: 서버로부터 받은 응답의 내용 (텍스트 형식)
                         var obj = JSON.parse(data);                                                                             // responseText를 data변수에 저장(JSON 파일), 그리고 JavaScript 객체로 변환
 
-                        var node = document.createElement("DIV");
-                        var textnode = document.createTextNode(obj.name + "-" + obj.timezone + " added...")                     // 새로운 텍스트를 가진 Textnode를 생성, textnode변수에 저장, 후에 특정 요소에 추가 가능
+                        var node = document.createElement("div");
+                        var textnode = document.createTextNode(obj.name + "-" + obj.timezone + " added...");                    // 새로운 텍스트를 가진 Textnode를 생성, textnode변수에 저장, 후에 특정 요소에 추가 가능
                         node.appendChild(textnode);                                                                             // div 태그에 textnode를 추가(텍스트 추가)
                         document.getElementById("citytable").appendChild(node);                                                 // citytalbe이란 id를 가진 태그에 node를 추가(div 태그 추가)
 
                     }
                 };
-                xhr.open("POST", "/cities");                                                                                    // /cities 엔드포인트에 POST 명령 준비 (편지 작성)
+                xhr.open("POST", "/cities", true);                                                                              // /cities 엔드포인트에 POST 명령 준비 (편지 작성)
                 xhr.setRequestHeader("X-CSRFToken", csrftoken);                                                                 // X-CSRFToken에 csrftoken 값을 설정, CSRF 공격에 대한 예방
+                xhr.setRequestHeader('Content-Type', 'application/json');                                                       // **JSON 파일 보낼 시 무조건 추가!!!!**
                 xhr.send(datastr);                                                                                              // datastr 데이터 보내기 (편지 전송)
             }
             
@@ -56,6 +77,7 @@
                 };
                 xhr.open("PUT", "/cities");
                 xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                xhr.setRequestHeader('Content-Type', 'application/json');                                                       // **JSON 파일 보낼 시 무조건 추가!!!!**
                 xhr.send(datastr);
             }
 
@@ -67,6 +89,7 @@
                 
                 var strurl = "/cities/" + cityid;
 
+                xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {
                         var data = xhr.responseText;
@@ -77,51 +100,44 @@
                 };
                 xhr.open("DELETE", strurl);
                 xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                xhr.setRequestHeader('Content-Type', 'application/json');                                                       // **JSON 파일 POST시 무조건 추가!!!!**
                 xhr.send(null);
             }
-        
-        
-        
-        
-        
-        
-        
-        
-        
         </script>
-
+{% endblock %}
 </head>
 <body>
     <div style="padding: 10px;">
-        <a href="/">HOME</a>
+        <a href="/cities">HOME</a>
     </div>
 
     <h1 style="padding: 10px;">City list</h1>
     <div style="margin: 20px 0">
         <input type="text" id="name_" value="도시명">
-        <input type="text" id="timezone_" value="=Asia/Seoul">
+        <input type="text" id="timezone_" value="Asia/Seoul">
         <button onclick="postCity()">등록</button>
     </div>
 
     <div id="citytable">
         <table width="100%" border="1" cellpadding="0" cellspacing="0">
-            {% if rsCity %}
-                {% for city in rsCity %}
-                <tr style="padding:10px; height: 45px;" id="citybox_{{city.id}}">
-                    <td align="center">{{city.id}}</td>
-                    <td align="center"><input type="text" id="name_{{city.id}}" value="{{city.name}}"></td>
-                    <td align="center"><input type="text" id="timezone_{{city.id}}" value="{{city.timezone}}"></td>
-                    <td align="center">{{city.current_time}}</td>
-                    <td align="center"><button cityid="{{city.id}}" onclick="putCity(this)">수정</button></td>
-                    <td align="center"><button onclick="deleteCity({{city.id}})">삭제</button></td>                                                 <!--이거 왜 안됨???????-->
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr style="padding: 10px; border-top:solid 1px #3388cc";>
-                    <td>
-                        No city list...
-                    </td>
-                </tr>
+        {% if rsCity %}
+            {% for city in rsCity %}
+            <tr style="padding:10px; height: 45px;" id="citybox_{{city.id}}">
+                <td align="center">{{city.id}}</td>
+                <td align="center"><input type="text" id="name_{{city.id}}" value="{{city.name}}"></td>
+                <td align="center"><input type="text" id="timezone_{{city.id}}" value="{{city.timezone}}"></td>
+                <td align="center">{{city.current_time}}</td>
+                <td align="center"><button cityid="{{city.id}}" onclick="putCity(this)">수정</button></td>
+                <td align="center"><button onclick="deleteCity(city.id)">삭제</button></td>                                                 <!--이거 왜 안됨???????-->
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr style="padding: 10px; border-top:solid 1px #3388cc";>
+                <td>
+                    No city list...
+                </td>
+            </tr>
+        {% endif %}
         </table>
     </div>
     

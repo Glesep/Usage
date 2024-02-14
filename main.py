@@ -22,7 +22,7 @@ class CityModify(BaseModel):
 templates = Jinja2Templates(directory="templates")                                                                      # 템플릿 사용 가능하게 해줌
 
 # 전체 도시들의 정보
-@app.get("/cities", response_class=HTMLResponse)                                                                        # Method = GET
+@app.get("/cities/", response_class=HTMLResponse)                                                                        # Method = GET
 def get_cities(request: Request):
     context = {}
     rsCity = []                                                                                                         # 결과를 저장하는 리스트
@@ -50,13 +50,13 @@ async def get_city(request: Request, city_id: int):                             
     return templates.TemplateResponse("city_detail.html", context)
    
 # 도시 정보 추가
-@app.post("/cities")                                                      
+@app.post("/cities/")                                                      
 async def create_city(city: City):                                                                                      # City 모델을 매개변수로 받음
     db.append(city.model_dump())                                                                                        # db 리스트에 City 모델(딕셔너리 타입) 추가
     
     return db[-1]                                                                                                       # db 리스트의 마지막 요소 반환
 
-@app.put("/cities")
+@app.put("/cities/")
 async def modify_city(city: CityModify):
     db[city.id - 1] = {'name': city.name, 'timezone': city.timezone}
 
