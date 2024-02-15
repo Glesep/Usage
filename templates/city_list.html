@@ -57,6 +57,7 @@
             }
             
             // AJAX로 수정
+            // elem: 요소(버튼)을 가리키는(참조) 변수
             function putCity(elem) {
                 var cityid = parseInt(elem.getAttribute('cityid'));                                                             // elem의 cityid라는 속성을 가져와(지정된 요소의 속성 값 반환) 인트로 바꾸고 cityid라는 변수에 대입
                 var cname = document.getElementById('name_'+cityid).value;
@@ -82,25 +83,22 @@
             }
 
             // AJAX로 삭제
-            function deleteCity(cityid) {
+            //putCity의 elem과 cityid는 같은 역할
+            function deleteCity(elem) {
                 if (confirm("삭제 하시겠습니까?") == false){
                     return false;
                 }
-                
+                var cityid = parseInt(elem.getAttribute('cityid'));                                                             // 버튼 안의 속성인 cityid를 들고 와서 int로 변환 후 cityid에 저장
                 var strurl = "/cities/" + cityid;
 
                 xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {
-                        var data = xhr.responseText;
-                        var obj = JSON.parse(data);
-
                         document.getElementById('citybox_'+cityid).remove();                                                    // 삭제
                     }
                 };
                 xhr.open("DELETE", strurl);
                 xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                xhr.setRequestHeader('Content-Type', 'application/json');                                                       // **JSON 파일 POST시 무조건 추가!!!!**
                 xhr.send(null);
             }
         </script>
@@ -127,8 +125,8 @@
                 <td align="center"><input type="text" id="name_{{city.id}}" value="{{city.name}}"></td>
                 <td align="center"><input type="text" id="timezone_{{city.id}}" value="{{city.timezone}}"></td>
                 <td align="center">{{city.current_time}}</td>
-                <td align="center"><button cityid="{{city.id}}" onclick="putCity(this)">수정</button></td>
-                <td align="center"><button onclick="deleteCity(city.id)">삭제</button></td>                                                 <!--이거 왜 안됨???????-->
+                <td align="center"><button cityid="{{city.id}}" onclick="putCity(this)">수정</button></td>                      <!--putCity(this) 함수는 버튼 자체를 참조하므로 버튼 안에 cityid를 정의해준다.-->
+                <td align="center"><button cityid="{{city.id}}" onclick="deleteCity(this)">삭제</button></td>                                                 <!--이거 왜 안됨???????-->
             </tr>
             {% endfor %}
         {% else %}

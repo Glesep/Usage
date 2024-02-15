@@ -6,6 +6,7 @@ readyState: XMLHttpRequest 객체의 상태를 나타내는 속성 (AJAX)
 3 (LOADING): 응답 본문이 일부 수신되었으며, 추가 데이터를 받고 있는 중인 상태입니다.
 4 (DONE): 요청이 완료되었고, 응답이 전체로 수신되었으며, 사용자가 응답을 처리할 수 있는 상태입니다.
 
+
 **POST 시 주의점**
 JSON 파일을 POST할 떄 :
 XMLHttpRequest.setRequestHeader("Content-Type", "application/json");
@@ -13,5 +14,8 @@ XMLHttpRequest.setRequestHeader("Content-Type", "application/json");
 
 xml 파일을 POST할 때 : 
 xmlHttpRequest.setRequestHeader("Content-Type", "text/xml");
+
+
+put/delete 파악 더 하기
 
 

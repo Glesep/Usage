@@ -44,7 +44,7 @@ async def get_city(request: Request, city_id: int):                             
     
     city = db[city_id - 1]                                                                                              # index = city_id -1
     r = requests.get(f"http://worldtimeapi.org/api/timezone/{city['timezone']}")
-    cur_time = r.json()['datetime']
+    cur_time = r.json()['datetime']                                                                                     # HTTP응답을 가져와 JSON 형식으로 변환한 후 JSON 객체에서 datetime 키에 해당하는 값을 가져와 cur_time 변수에 저장
     context = {'request': request, 'name': city['name'], 'timezone': city['timezone'], 'current_time': cur_time}
     
     return templates.TemplateResponse("city_detail.html", context)
