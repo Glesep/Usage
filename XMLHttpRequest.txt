@@ -16,6 +16,6 @@ xml 파일을 POST할 때 :
 xmlHttpRequest.setRequestHeader("Content-Type", "text/xml");
 
 
-put/delete 파악 더 하기
+
 
 
